@@ -1,1 +1,1 @@
-[]
+[{"id":1,"title":"post2 new","username":"Artem","likes":["aa"],"dislikes":[],"date":"1701528993768"},{"id":2,"title":"post2","username":"Artem","likes":[],"dislikes":["aa"],"date":"1701529126492","comments":[]},{"id":3,"title":"new post","username":"aa","likes":[],"dislikes":[],"date":"1701529305390","comments":[]},{"id":4,"title":"new post","username":"aa","likes":[],"dislikes":["aa"],"date":"1701529349383","comments":[]}]
