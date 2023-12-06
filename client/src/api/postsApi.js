@@ -26,6 +26,15 @@ class PostsApi {
         return data;
     }
 
+    async getPagePosts(pageNumber) {
+        const response = await fetch(`${URL}/post/page/${pageNumber}`, {
+            method: "GET"
+        })
+        const data = await response.json();
+        console.log(data);
+        return data;
+    }
+
     async editPost(id, post) {
         const response = await fetch(`${URL}/post/${id}`, {
             body: JSON.stringify(post),

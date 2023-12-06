@@ -1,8 +1,8 @@
-import { useState } from "react"
+import { useState, memo } from "react"
 import { useSelectorAuth } from "../redux/store";
 
 
-const Post = ({ post, likeHandleClick, dislikeHandleClick }) => {
+const Post = memo(({ post, likeHandleClick, dislikeHandleClick }) => {
 
     const userData = useSelectorAuth();
     const [likes, setLikes] = useState(post.likes)
@@ -64,6 +64,6 @@ const Post = ({ post, likeHandleClick, dislikeHandleClick }) => {
 
 
     </div>
-}
+})
 
 export default Post

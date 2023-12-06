@@ -1,10 +1,11 @@
 import { useDispatch } from "react-redux"
 import { authActions } from "../redux/AuthSlice";
 import { useSelectorAuth } from "../redux/store";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import PostsApi from "../api/postsApi";
 import Post from "../components/Post";
-import Paginator from "../components/Paginator";
+import Pagination from "../components/Paginator";
+import PostForm from "../components/PostForm";
 
 const Main = () => {
 
@@ -12,16 +13,21 @@ const Main = () => {
     const userData = useSelectorAuth();
     const [posts, setPosts] = useState([]);
     const postsApi = new PostsApi();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [postFormOpened, setPostFormOpened] = useState(false)
 
     useEffect(() => {
-        // postsApi.addPost('new post', userData)
-        postsApi.getPosts().then(data => {
-            console.log(data);
+        postsApi.getPagePosts(currentPage).then(data => {
+            if (data.totalPages != totalPages) {
+                console.log('total new');
+                setTotalPages(data.totalPages);
+            }
             setPosts(data.result)
         });
-    }, [])
+    }, [currentPage])
 
-    const likeHandleClick = async (post) => {
+    const likeHandleClick = useCallback(async (post) => {
         const prevDislikes = post.dislikes;
         const prevLikes = post.likes;
         if (prevLikes.includes(userData)) {
@@ -35,9 +41,9 @@ const Main = () => {
         const postUpdated = { ...post, likes: prevLikes };
         const result = await postsApi.editPost(post.id, postUpdated);
         return result;
-    }
+    }, [])
 
-    const dislikeHandleClick = async (post) => {
+    const dislikeHandleClick = useCallback(async (post) => {
         const prevDislikes = post.dislikes;
         const prevLikes = post.likes;
         if (prevDislikes.includes(userData)) {
@@ -51,7 +57,13 @@ const Main = () => {
         const postUpdated = { ...post, dislikes: prevDislikes };
         const result = await postsApi.editPost(post.id, postUpdated);
         return result;
-    }
+    }, [])
+
+    const changePage = useCallback((pageNumber) => {
+        if (pageNumber != currentPage) {
+            setCurrentPage(pageNumber)
+        }
+    }, [setCurrentPage, currentPage])
 
     return <body>
         <header>
@@ -71,20 +83,33 @@ const Main = () => {
             <div className="container">
                 <div className="row">
                     {posts.map((post, idx) => {
-                        console.log(post);
                         return <Post post={post} likeHandleClick={likeHandleClick} dislikeHandleClick={dislikeHandleClick} key={idx}></Post>
                     })}
                 </div>
             </div>
         </section>
+
         <section>
-            <div className="addPost">
-                <button></button>
+            <div className="test">
+                <Pagination props={{ currentPage, totalPages, changePage }}></Pagination>
             </div>
         </section>
+
+        <section>
+            {postFormOpened && <PostForm onClose={() => setPostFormOpened(false)} />}
+        </section>
+
         <footer>
-            <div>
-                <Paginator></Paginator>
+            <div className="addPost" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => {
+                console.log('dialog');
+                setPostFormOpened(true)
+            }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24">
+                    <g fill="none" fill-rule="evenodd">
+                        <path d="M0 0h24v24H0z"></path>
+                        <path d="M7 12L12 12M12 12L17 12M12 12L12 7M12 12L12 17" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" id="svg_1"></path>
+                    </g>
+                </svg>
             </div>
         </footer>
     </body >
