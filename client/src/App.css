@@ -1,6 +1,7 @@
 :root {
     --headerColor: #4056A1;
     --textColor: #D79922;
+    --mainColor: lightgray;
 }
 
 .btn-block {
@@ -31,11 +32,18 @@ header {
     margin: .5rem;
 }
 
-.postReractions {
+.postActions {
+    justify-content: space-between;
+    border-bottom: 1px solid var(--mainColor);
+}
+
+.postReactions,
+.postActions {
     display: flex;
 }
 
-.postReraction {
+.postReaction,
+.postAction {
     align-items: center;
     justify-content: space-evenly;
     display: flex;
@@ -46,6 +54,11 @@ header {
     background-color: lightgray;
     margin: .1rem;
     cursor: pointer;
+}
+
+.postAction {
+    width: 32px;
+    height: 32px;
 }
 
 .clicked {
@@ -76,7 +89,8 @@ header {
     justify-content: center;
 }
 
-.postForm {
+.postForm,
+.deletePostForm {
     position: fixed;
     top: 0;
     left: 0;
@@ -105,4 +119,31 @@ header {
     border: none;
     font-size: 18px;
     cursor: pointer;
+}
+
+.postForm-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+}
+
+.postForm-imagePreview img {
+    width: 100%;
+    /* display: none; */
+}
+
+.postCommentInput {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.sendMessageInput>input {
+    border-radius: .5rem;
+    width: 100%;
+}
+
+.sendMessageInput {
+    width: calc(100% - 32px);
 }
