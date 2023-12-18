@@ -1,14 +1,43 @@
-import { useState, memo } from "react"
+import { useState, memo, useRef, useCallback } from "react"
 import { useSelectorAuth } from "../redux/store";
-
+import PostComment from "./PostComment";
+import PostsApi from "../api/postsApi";
 
 const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleClick, deletePostHandleClick }) => {
 
+    const postsApi = new PostsApi();
     const username = useSelectorAuth();
     const [likes, setLikes] = useState(post.likes)
     const [dislikes, setDislikes] = useState(post.dislikes)
+    const [comments, setComments] = useState(post.comments)
+    const commentInputRef = useRef('');
 
-    return <div className="col-lg-12 col-md-6 col-sm-4 p-0">
+    const addComment = async () => {
+        const response = await postsApi.addComment({ text: commentInputRef.current, postId: post.id, username })
+        if (response.success) {
+            setComments(prev => {
+                const newComments = prev.slice();
+                newComments.push(response.result)
+                return newComments
+            })
+        } else {
+
+        }
+    }
+
+    const deleteCommentClick = useCallback(async (id) => {
+        const result = await postsApi.deleteComment(id)
+        if (result.success) {
+            setComments(prev => {
+                const newComments = prev.filter(comment => comment.id != id)
+                return newComments;
+            })
+        } else {
+            
+        }
+    })
+
+    return <div className="col-xl-4 col-md-6 col-sm-12 p-0">
         <div className="post">
             <div className="postAuthor text-bg-primary">
                 <span>{post.username}</span>
@@ -60,7 +89,7 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
                         </div>
                     </div>
                 </div>
-                {username == post.username ? <div className="postActions align-bottom p-2">
+                {username == post.username ? <div className="d-flex align-bottom p-2">
                     <div className="postEditIcon postAction" onClick={() => editPostHandleClick(post)}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                             <g fill="none" fill-rule="evenodd">
@@ -84,13 +113,13 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
                 </div> : ''}
             </div>
             <div className="postComments">
-
+                {comments.map(comment => <PostComment comment={comment} deleteCommentClick={deleteCommentClick} />)}
             </div>
             <div className="postCommentInput">
                 <div className="sendMessageInput mx-1 bot">
-                    <input></input>
+                    <input onChange={(e) => commentInputRef.current = e.target.value}></input>
                 </div>
-                <div className="sendMessageIcon postAction clicked mb-1">
+                <div className="sendMessageIcon postAction clicked mb-1" onClick={addComment}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <g fill="none" fill-rule="evenodd">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M18.455,9.8834L7.063,4.1434C6.76535,3.96928 6.40109,3.95274 6.08888,4.09916C5.77667,4.24558 5.55647,4.53621 5.5,4.8764C5.5039,4.98942 5.53114,5.10041 5.58,5.2024L7.749,10.4424C7.85786,10.7903 7.91711,11.1519 7.925,11.5164C7.91714,11.8809 7.85789,12.2425 7.749,12.5904L5.58,17.8304C5.53114,17.9324 5.5039,18.0434 5.5,18.1564C5.55687,18.4961 5.77703,18.7862 6.0889,18.9323C6.40078,19.0785 6.76456,19.062 7.062,18.8884L18.455,13.1484C19.0903,12.8533 19.4967,12.2164 19.4967,11.5159C19.4967,10.8154 19.0903,10.1785 18.455,9.8834L18.455,9.8834z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" id="svg_1"></path>

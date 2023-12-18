@@ -24,7 +24,25 @@ header {
 .post {
     /* border-radius: 10% 10% 10% 100% / 20% 20% 20% 0%; */
     margin: 0 .5rem .5rem .5rem;
-    border: 2px solid #0B0380;
+    border: 2px solid var(--mainColor);
+    border-radius: .5rem;
+}
+
+.postCommentActions {
+    cursor: pointer;
+    display: none;
+}
+
+.postComment:hover .postCommentActions {
+    display: flex;
+}
+
+.postCommentText input {
+    width: 100%;
+    height: fit-content;
+    border: 1px solid;
+    resize: vertical;
+    overflow: auto;
 }
 
 .postAuthor,
@@ -38,12 +56,22 @@ header {
 }
 
 .postReactions,
-.postActions {
+.postActions,
+.commentActions {
     display: flex;
+    justify-self: center;
+    align-items: center;
+    max-height: 40px;
+}
+
+.commentActions {
+    background-color: lightgray;
+    border-radius: .5rem;
 }
 
 .postReaction,
-.postAction {
+.postAction,
+.commentAction {
     align-items: center;
     justify-content: space-evenly;
     display: flex;
@@ -56,9 +84,28 @@ header {
     cursor: pointer;
 }
 
-.postAction {
+.postAction,
+.commentAction {
+    align-items: center;
+    justify-content: center;
     width: 32px;
     height: 32px;
+    border-radius: 50%;
+}
+
+.commentReactionsInfo {
+    height: 100%;
+    min-width: 40px;
+    max-width: 50px;
+    align-items: center;
+    background-color: lightgray;
+}
+
+.commentAction {
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
 }
 
 .clicked {
@@ -136,7 +183,6 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
-
 }
 
 .sendMessageInput>input {
@@ -146,4 +192,21 @@ header {
 
 .sendMessageInput {
     width: calc(100% - 32px);
+}
+
+.postComment {
+    border-bottom: 1px solid var(--mainColor);
+}
+
+.postCommentFooter {
+    display: flex;
+    justify-content: space-between;
+}
+
+.commentLike.clicked {
+    background-color: lightgreen;
+}
+
+.commentDislike.clicked {
+    background-color: red;
 }

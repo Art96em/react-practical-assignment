@@ -65,6 +65,41 @@ class PostsApi {
         const data = await response.json();
         return data;
     }
+
+    async addComment(comment) {
+        const response = await fetch(`${URL}/comment`, {
+            body: JSON.stringify(comment),
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        const data = await response.json();
+        return data;
+    }
+
+    async editComment(comment) {
+        const response = await fetch(`${URL}/comment/${comment.id}`, {
+            body: JSON.stringify(comment),
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        const data = await response.json();
+        return data;
+    }
+
+    async deleteComment(id) {
+        const response = await fetch(`${URL}/comment/${id}`, {
+            method: 'DELETE',
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        const data = await response.json();
+        return data;
+    }
 }
 
 export default PostsApi
