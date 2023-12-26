@@ -3,7 +3,6 @@ const URL = 'http://localhost:8080'
 class PostsApi {
 
     async addPost(post) {
-        console.log(post);
         const response = await fetch(`${URL}/post`, {
             body: JSON.stringify(post),
             method: 'POST',
@@ -17,16 +16,21 @@ class PostsApi {
 
     async getPosts() {
         const response = await fetch(`${URL}/post`, {
-            method: "GET"
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
         })
         const data = await response.json();
-        console.log(data);
         return data;
     }
 
     async getPagePosts(pageNumber) {
         const response = await fetch(`${URL}/post/page/${pageNumber}`, {
-            method: "GET"
+            method: "GET",
+            headers: {
+                "Content-Type": "application/jsong"
+            }
         })
         const data = await response.json();
         return data;
@@ -100,6 +104,18 @@ class PostsApi {
         const data = await response.json();
         return data;
     }
+
+    async addImage(id, file) {
+        const formData = new FormData();
+        formData.append("picture", file);
+        const response = await fetch(`${URL}/post/${id}/picture`, {
+            body: formData,
+            method: 'POST',
+        })
+        const data = await response.json();
+        return data;
+    }
+
 }
 
 export default PostsApi

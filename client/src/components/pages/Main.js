@@ -1,19 +1,19 @@
 import { useDispatch } from "react-redux"
-import { authActions } from "../redux/AuthSlice";
-import { useSelectorAuth } from "../redux/store";
+import { authActions } from "../../redux/AuthSlice";
+import { useSelectorAuth } from "../../redux/store";
 import { useEffect, useState, memo, useCallback, useRef } from "react";
-import PostsApi from "../api/postsApi";
-import Post from "../components/Post";
-import Pagination from "../components/Paginator";
-import PostForm from "../components/PostForm";
-import DeletePostForm from "../components/DeletePostForm";
+import PostsApi from "../../api/postsApi";
+import Post from "../forms/Post";
+import Pagination from "../forms/Paginator";
+import PostForm from "../forms/PostForm";
+import DeletePostForm from "../forms/DeletePostForm";
+import { PlusIcon } from "../icons/icons";
 
 const Main = () => {
 
     const postsApi = new PostsApi();
 
     const selectedPost = useRef(null);
-
 
     const dispatch = useDispatch();
     const username = useSelectorAuth();
@@ -54,7 +54,7 @@ const Main = () => {
             prevLikes.push(username)
         }
         const postUpdated = { ...post, likes: prevLikes };
-        const result = await postsApi.editPost(post.id, postUpdated);
+        const result = await postsApi.editPost(postUpdated);
         return result;
     }, [])
 
@@ -70,7 +70,7 @@ const Main = () => {
             prevDislikes.push(username)
         }
         const postUpdated = { ...post, dislikes: prevDislikes };
-        const result = await postsApi.editPost(post.id, postUpdated);
+        const result = await postsApi.editPost(postUpdated);
         return result;
     }, [])
 
@@ -98,18 +98,28 @@ const Main = () => {
         setDeletePostFormOpened(false)
     }
 
-    const postConfirmHandle = async (title, image) => {
-        let response;
-        if (selectedPost.current != null) {
-            response = await postsApi.editPost({ ...selectedPost.current, title, image });
-        } else {
-            response = await postsApi.addPost({ title, image, username })
-        }
+    const postConfirmHandle = async (title, imageSrc) => {
+        let response = selectedPost.current != null ? await postsApi.editPost({ ...selectedPost.current, title }) : await postsApi.addPost({ title, username });
         if (response.success) {
-            if (selectedPost.current != null) {
-                const newPosts = posts.map(post => post.id == selectedPost.current.id ? response.result : post)
-                setPosts(newPosts)
+            if (imageSrc && selectedPost.current.imageSrc != imageSrc) {
+                const postId = response.result.id;
+                response = await postsApi.addImage(postId, imageSrc);
             }
+            setPosts(prevPosts => {
+                let res;
+                if (selectedPost.current != null) {
+                    res = prevPosts.map(post => post.id == selectedPost.current.id ? { ...response.result, comments: post.comments } : post);
+                } else {
+                    prevPosts.push({ ...response.result, comments: [] })
+                    res = prevPosts.slice();
+                }
+                return res;
+            })
+
+            setCurrentPage(prevCurrent => {
+                return posts.length > 9 ? prevCurrent + 1 : prevCurrent;
+            })
+
             postCloseHandleClick();
             // закинуть информацию popup об успехе
         } else {
@@ -120,9 +130,16 @@ const Main = () => {
     const deletePostConfirmHandle = async () => {
         const response = await postsApi.deletePost(selectedPost.current.id)
         if (response.success) {
-            const newPosts = posts.filter(post => post.id != selectedPost.current.id)
-            setPosts(newPosts)
             deletePostHandleClose()
+            let postsLength;
+            setPosts(prevPosts => {
+                const newPosts = prevPosts.filter(post => post.id != response.result.id)
+                postsLength = newPosts.length;
+                return newPosts
+            })
+            setCurrentPage(prevCurrent => {
+                return !postsLength ? prevCurrent - 1 : prevCurrent;
+            })
             // закинуть информацию popup об успехе
         } else {
             // закинуть информацию popup об неудаче с причиной
@@ -135,7 +152,7 @@ const Main = () => {
         }
     }, [setCurrentPage, currentPage])
 
-    return <body>
+    return <div>
         <header>
             <div className='container'>
                 <div className='row'>
@@ -149,8 +166,8 @@ const Main = () => {
 
         <section>
             <div className="container">
-                <div className="row py-1 my-1 search">
-                    <input className="mx-2" placeholder="Search posts" onChange={(e) => {
+                <div className="row p-1 search">
+                    <input className="rounded" placeholder="Search posts" onChange={(e) => {
                         if (debounce != null) {
                             clearTimeout(debounce)
                         }
@@ -181,15 +198,10 @@ const Main = () => {
 
         <footer>
             {!editPostFormOpened && <div className="addPost" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={newPostHandleClick}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24">
-                    <g fill="none" fill-rule="evenodd">
-                        <path d="M0 0h24v24H0z"></path>
-                        <path d="M7 12L12 12M12 12L17 12M12 12L12 7M12 12L12 17" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" id="svg_1"></path>
-                    </g>
-                </svg>
+                <PlusIcon />
             </div>}
         </footer>
-    </body >
+    </div >
 }
 
 export default Main

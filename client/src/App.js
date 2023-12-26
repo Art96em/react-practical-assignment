@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'
-import Test from './components/Test';
-import Login from './pages/Login';
+import Login from './components/pages/Login';
 import { useSelectorAuth } from './redux/store';
-import Main from './pages/Main';
+import Main from './components/pages/Main';
 
 function App() {
 
@@ -18,8 +17,7 @@ function App() {
     }, []);
 
     return (
-        <div className="App">
-            {/* <Test /> */}
+        <div className="App bg-secondary bg-opacity-25">
             {!userData ? <Login /> : <Main />}
         </div>
     );
