@@ -2,6 +2,7 @@
     --headerColor: #4056A1;
     --textColor: #D79922;
     --mainColor: lightgray;
+    --botomHeight: 50px;
 }
 
 * {
@@ -28,6 +29,10 @@ header {
     justify-content: space-between;
     align-items: center;
     font-size: large;
+}
+
+.posts {
+    padding-bottom: var(--botomHeight);
 }
 
 .post {
@@ -78,12 +83,12 @@ header {
 
 .commentActions {
     background-color: lightgray;
+    overflow: hidden;
     border-radius: .5rem;
 }
 
 .postReaction,
-.postAction,
-.commentAction {
+.postAction {
     align-items: center;
     justify-content: space-evenly;
     display: flex;
@@ -96,26 +101,25 @@ header {
     cursor: pointer;
 }
 
-.postAction,
-.commentAction {
-    align-items: center;
+.postAction {
     justify-content: center;
     width: 32px;
-    height: 32px;
     border-radius: 50%;
 }
 
 .commentReactionsInfo {
-    height: 100%;
+    /* height: 100%; */
     min-width: 40px;
     max-width: 50px;
-    align-items: center;
-    background-color: lightgray;
+    /* align-items: center; */
+    /* background-color: lightgray; */
 }
 
 .commentAction {
     align-items: center;
     justify-content: center;
+    display: flex;
+    cursor: pointer;
     width: 20px;
     height: 20px;
 }
@@ -129,21 +133,21 @@ header {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background-color: red;
+    background-color: var(--headerColor);
+    border: 3px solid var(--headerColor);
     bottom: 1rem;
     right: 1rem;
-    /* z-index: 10; */
+    cursor: pointer;
+    transition: border-color 0.5s ease;
 }
 
-.pagination {
+.mp {
+    margin: auto;
     position: fixed;
+    left: 0;
     bottom: 0;
-    transform: translate(-50%, -50%);
-}
-
-.test {
-    width: auto;
-    display: flex;
+    height: var(--botomHeight);
+    width: 100vw;
     align-items: center;
     justify-content: center;
 }
@@ -176,7 +180,6 @@ header {
     right: 10px;
     background: transparent;
     border: none;
-    font-size: 18px;
     cursor: pointer;
 }
 
@@ -225,10 +228,26 @@ header {
     background-color: red;
 }
 
-.col {
+.postComments {
     transition: height 200ms;
     /* transition-property: height;
     transition-duration: 200ms; */
     overflow: scroll;
     overflow-x: hidden;
+}
+
+.login {
+    background-color: #FFFAFA;
+    position: absolute;
+    padding: 20px;
+    height: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: .5rem;
+    border: 1px solid black;
+}
+
+.addPost:hover {
+    border-color: red;
 }

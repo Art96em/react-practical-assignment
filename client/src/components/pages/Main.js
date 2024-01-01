@@ -1,13 +1,14 @@
 import { useDispatch } from "react-redux"
 import { authActions } from "../../redux/AuthSlice";
-import { useSelectorAuth } from "../../redux/store";
+import { paginationActions } from "../../redux/PaginationSlice";
+import { useSelectorAuth, useSelectorPaginatorCurrent, useSelectorPaginatorTotal } from "../../redux/store";
 import { useEffect, useState, memo, useCallback, useRef } from "react";
 import PostsApi from "../../api/postsApi";
 import Post from "../forms/Post";
 import Pagination from "../forms/Paginator";
 import PostForm from "../forms/PostForm";
 import DeletePostForm from "../forms/DeletePostForm";
-import { PlusIcon } from "../icons/icons";
+import { LogoutIcon, PlusIcon } from "../icons/icons";
 
 const Main = () => {
 
@@ -17,29 +18,24 @@ const Main = () => {
 
     const dispatch = useDispatch();
     const username = useSelectorAuth();
+    const currentPage = useSelectorPaginatorCurrent();
+    const totalPages = useSelectorPaginatorTotal();
+
     let debounce;
 
     const [filterText, setFilterText] = useState('')
     const [posts, setPosts] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const [editPostFormOpened, setEditPostFormOpened] = useState(false)
     const [deletePostFormOpened, setDeletePostFormOpened] = useState(false)
 
     useEffect(() => {
-        let response;
-        if (!!filterText) {
-            response = postsApi.searchPosts(filterText)
-        } else {
-            response = postsApi.getPagePosts(currentPage);
-        }
+        let response = !!filterText ? postsApi.searchPosts(filterText) : postsApi.getPagePosts(currentPage);
         response.then(data => {
             if (data.totalPages != totalPages) {
-                setTotalPages(data.totalPages);
+                dispatch(paginationActions.setTotalPages(!!data.totalPages ? +data.totalPages : 1))
             }
             setPosts(data.result);
         })
-        return () => setPosts([])
     }, [currentPage, filterText])
 
     const likeHandleClick = useCallback(async (post) => {
@@ -101,7 +97,7 @@ const Main = () => {
     const postConfirmHandle = async (title, imageSrc) => {
         let response = selectedPost.current != null ? await postsApi.editPost({ ...selectedPost.current, title }) : await postsApi.addPost({ title, username });
         if (response.success) {
-            if (imageSrc && selectedPost.current.imageSrc != imageSrc) {
+            if (imageSrc && selectedPost.current?.imageSrc != imageSrc) {
                 const postId = response.result.id;
                 response = await postsApi.addImage(postId, imageSrc);
             }
@@ -115,10 +111,9 @@ const Main = () => {
                 }
                 return res;
             })
-
-            setCurrentPage(prevCurrent => {
-                return posts.length > 9 ? prevCurrent + 1 : prevCurrent;
-            })
+            if (posts.length > 9) {
+                dispatch(paginationActions.setCurrentPage(currentPage + 1))
+            }
 
             postCloseHandleClick();
             // закинуть информацию popup об успехе
@@ -137,20 +132,14 @@ const Main = () => {
                 postsLength = newPosts.length;
                 return newPosts
             })
-            setCurrentPage(prevCurrent => {
-                return !postsLength ? prevCurrent - 1 : prevCurrent;
-            })
+            if (!!!postsLength) {
+                dispatch(paginationActions.setCurrentPage(currentPage + 1))
+            }
             // закинуть информацию popup об успехе
         } else {
             // закинуть информацию popup об неудаче с причиной
         }
     }
-
-    const changePage = useCallback((pageNumber) => {
-        if (pageNumber != currentPage) {
-            setCurrentPage(pageNumber)
-        }
-    }, [setCurrentPage, currentPage])
 
     return <div>
         <header>
@@ -158,7 +147,7 @@ const Main = () => {
                 <div className='row'>
                     <div className='col-12 header'>
                         <label>{username}</label>
-                        <button className="logout-btn" onClick={() => dispatch(authActions.reset())}>Logout</button>
+                        <button className="logout-btn" onClick={() => dispatch(authActions.reset())}>Logout <LogoutIcon /></button>
                     </div>
                 </div>
             </div>
@@ -179,15 +168,12 @@ const Main = () => {
 
         <section>
             <div className="container">
-                <div className="row">
-                    {posts.map((post, idx) => <Post post={post} likeHandleClick={likeHandleClick} dislikeHandleClick={dislikeHandleClick} editPostHandleClick={editPostHandleOpen} deletePostHandleClick={deletePostHandleOpen} key={idx} />)}
+                <div className="row posts">
+                    {posts.map((post, idx) => <Post post={post} likeHandleClick={likeHandleClick} dislikeHandleClick={dislikeHandleClick} editPostHandleClick={editPostHandleOpen} deletePostHandleClick={deletePostHandleOpen} key={post.id} />)}
                 </div>
-            </div>
-        </section>
-
-        <section>
-            <div className="test">
-                {totalPages && <Pagination props={{ currentPage, totalPages, changePage }} />}
+                <div className="row mp">
+                    {totalPages && <Pagination />}
+                </div>
             </div>
         </section>
 
@@ -198,9 +184,28 @@ const Main = () => {
 
         <footer>
             {!editPostFormOpened && <div className="addPost" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={newPostHandleClick}>
-                <PlusIcon />
+                <PlusIcon color="white" />
             </div>}
+            <div class="toast-container position-absolute top-0 end-0 p-3">
+                <div className="toast align-items-center show text-white bg-primary border-0 position-fixed bottom-0 start-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div className="d-flex">
+                        <div className="toast-body">
+                            Some text inside the toast body
+                        </div>
+                        <button type="button" className="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div className="d-flex">
+                        <div className="toast-body">
+                            Some text inside the toast body
+                        </div>
+                        <button type="button" className="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+
         </footer>
+
+
     </div >
 }
 

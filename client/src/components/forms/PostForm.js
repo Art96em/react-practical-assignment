@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useSelectorAuth } from "../../redux/store"
+import { XIcon } from "../icons/icons"
 
 const PostForm = ({ closeModalHandle, postConfirmHandle, post }) => {
 
@@ -24,8 +25,8 @@ const PostForm = ({ closeModalHandle, postConfirmHandle, post }) => {
     }
 
     return (
-        <div className="postForm">
-            <div className="postForm-modal">
+        <div className="postForm" onClick={closeModalHandle}>
+            <div className="postForm-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="postForm-header text-uppercase mb-5">
                     {post.current ? <h3>Edit Post</h3> : <h3>New Post</h3>}
                 </div>
@@ -45,9 +46,11 @@ const PostForm = ({ closeModalHandle, postConfirmHandle, post }) => {
                 </div>
                 <div className="postForm-footer">
                     <button type="submit" className={`btn btn-primary ${!title ? 'disabled' : ''}`} onClick={handleSubmitForm}>Save</button>
-                    {imageObj.displayImage && <button type="button" className="btn btn-primary" onClick={deleteImage}>Delete image</button>}
+                    {!post.current && imageObj.displayImage && <button type="button" className="btn btn-primary" onClick={deleteImage}>Delete image</button>}
                 </div>
-                <button className="postForm-close" onClick={closeModalHandle}>X</button>
+                <div className="postForm-close" onClick={closeModalHandle}>
+                    <XIcon width={24} height={24} />
+                </div>
             </div>
         </div>
     );
