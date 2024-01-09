@@ -2,13 +2,16 @@ import { useDispatch } from "react-redux"
 import { authActions } from "../../redux/AuthSlice";
 import { paginationActions } from "../../redux/PaginationSlice";
 import { useSelectorAuth, useSelectorPaginatorCurrent, useSelectorPaginatorTotal } from "../../redux/store";
-import { useEffect, useState, memo, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import PostsApi from "../../api/postsApi";
 import Post from "../forms/Post";
 import Pagination from "../forms/Paginator";
 import PostForm from "../forms/PostForm";
 import DeletePostForm from "../forms/DeletePostForm";
 import { LogoutIcon, PlusIcon } from "../icons/icons";
+import InfoForm from "../forms/InfoForm";
+import { infoActions } from "../../redux/InfoSlice";
+import { useNavigate } from "react-router";
 
 const Main = () => {
 
@@ -20,6 +23,7 @@ const Main = () => {
     const username = useSelectorAuth();
     const currentPage = useSelectorPaginatorCurrent();
     const totalPages = useSelectorPaginatorTotal();
+    const navigate = useNavigate()
 
     let debounce;
 
@@ -70,31 +74,36 @@ const Main = () => {
         return result;
     }, [])
 
-    const editPostHandleOpen = (post) => {
+    const editPostHandleOpen = useCallback((post) => {
         selectedPost.current = post;
         setEditPostFormOpened(true)
-    }
+    }, [])
 
-    const newPostHandleClick = () => {
+    const newPostHandleClick = useCallback(() => {
         setEditPostFormOpened(true)
-    }
+    }, [])
 
-    const postCloseHandleClick = () => {
+    const postCloseHandleClick = useCallback(() => {
         selectedPost.current = null;
         setEditPostFormOpened(false)
-    }
+    }, [])
 
-    const deletePostHandleOpen = (post) => {
+    const deletePostHandleOpen = useCallback((post) => {
         selectedPost.current = post;
         setDeletePostFormOpened(true)
-    }
+    }, [])
 
-    const deletePostHandleClose = () => {
+    const deletePostHandleClose = useCallback(() => {
         selectedPost.current = null;
         setDeletePostFormOpened(false)
+    }, [])
+
+    const handleLogout = () => {
+        dispatch(authActions.reset())
+        navigate('/')
     }
 
-    const postConfirmHandle = async (title, imageSrc) => {
+    const postConfirmHandle = useCallback(async (title, imageSrc) => {
         let response = selectedPost.current != null ? await postsApi.editPost({ ...selectedPost.current, title }) : await postsApi.addPost({ title, username });
         if (response.success) {
             if (imageSrc && selectedPost.current?.imageSrc != imageSrc) {
@@ -114,15 +123,14 @@ const Main = () => {
             if (posts.length > 9) {
                 dispatch(paginationActions.setCurrentPage(currentPage + 1))
             }
-
             postCloseHandleClick();
-            // закинуть информацию popup об успехе
+            dispatch(infoActions.setInfo({ text: 'Post added', type: 'success' }));
         } else {
-            // закинуть информацию popup об неудаче с причиной
+            dispatch(infoActions.setInfo({ text: 'Erorr adding post: ' + response.result, type: 'error' }));
         }
-    }
+    }, [])
 
-    const deletePostConfirmHandle = async () => {
+    const deletePostConfirmHandle = useCallback(async () => {
         const response = await postsApi.deletePost(selectedPost.current.id)
         if (response.success) {
             deletePostHandleClose()
@@ -132,14 +140,14 @@ const Main = () => {
                 postsLength = newPosts.length;
                 return newPosts
             })
-            if (!!!postsLength) {
-                dispatch(paginationActions.setCurrentPage(currentPage + 1))
+            if (!postsLength) {
+                dispatch(paginationActions.setCurrentPage(currentPage - 1))
             }
-            // закинуть информацию popup об успехе
+            dispatch(infoActions.setInfo({ text: 'Post deleted', type: 'success' }));
         } else {
-            // закинуть информацию popup об неудаче с причиной
+            dispatch(infoActions.setInfo({ text: 'Erorr deleting post: ' + response.result, type: 'error' }));
         }
-    }
+    }, [])
 
     return <div>
         <header>
@@ -147,7 +155,7 @@ const Main = () => {
                 <div className='row'>
                     <div className='col-12 header'>
                         <label>{username}</label>
-                        <button className="logout-btn" onClick={() => dispatch(authActions.reset())}>Logout <LogoutIcon /></button>
+                        <button className="logout-btn" onClick={handleLogout}>Logout <LogoutIcon /></button>
                     </div>
                 </div>
             </div>
@@ -155,7 +163,7 @@ const Main = () => {
 
         <section>
             <div className="container">
-                <div className="row p-1 search">
+                <div className="row p-1">
                     <input className="rounded" placeholder="Search posts" onChange={(e) => {
                         if (debounce != null) {
                             clearTimeout(debounce)
@@ -171,7 +179,7 @@ const Main = () => {
                 <div className="row posts">
                     {posts.map((post, idx) => <Post post={post} likeHandleClick={likeHandleClick} dislikeHandleClick={dislikeHandleClick} editPostHandleClick={editPostHandleOpen} deletePostHandleClick={deletePostHandleOpen} key={post.id} />)}
                 </div>
-                <div className="row mp">
+                <div className="row mainPaginator">
                     {totalPages && <Pagination />}
                 </div>
             </div>
@@ -186,25 +194,8 @@ const Main = () => {
             {!editPostFormOpened && <div className="addPost" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={newPostHandleClick}>
                 <PlusIcon color="white" />
             </div>}
-            <div class="toast-container position-absolute top-0 end-0 p-3">
-                <div className="toast align-items-center show text-white bg-primary border-0 position-fixed bottom-0 start-0" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div className="d-flex">
-                        <div className="toast-body">
-                            Some text inside the toast body
-                        </div>
-                        <button type="button" className="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div className="d-flex">
-                        <div className="toast-body">
-                            Some text inside the toast body
-                        </div>
-                        <button type="button" className="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>
-            </div>
-
+            <InfoForm />
         </footer>
-
 
     </div >
 }

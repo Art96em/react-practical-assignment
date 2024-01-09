@@ -1,24 +1,25 @@
-import { useState, memo, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback } from "react"
 import { useSelectorAuth } from "../../redux/store";
 import PostComment from "./PostComment";
 import PostsApi from "../../api/postsApi";
 import { DeleteIcon, DislikeIcon, EditIcon, LikeIcon, SendIcon } from "../icons/icons";
+import { infoActions } from "../../redux/InfoSlice";
+import { useDispatch } from "react-redux";
+import { getDate } from "../../util/util";
 
-const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleClick, deletePostHandleClick }) => {
+const Post = ({ post, likeHandleClick, dislikeHandleClick, editPostHandleClick, deletePostHandleClick }) => {
 
-    console.log('post render', post.id);
-
+    const dispatch = useDispatch()
     const postsApi = new PostsApi();
     const username = useSelectorAuth();
     const commentInputRef = useRef(null);
-    const options = { year: "numeric", month: "long", day: "numeric" }
 
-    const [image, setImage] = useState(post.imageSrc)
+    const image = post.imageSrc
+    const date = new Date(+post.date)
     const [likes, setLikes] = useState(post.likes)
     const [dislikes, setDislikes] = useState(post.dislikes)
     const [comments, setComments] = useState(post.comments)
     const [isExpanded, setIsExpanded] = useState(false);
-    const [date, setDate] = useState(new Date(+post.date))
 
     const toggleIsExpanded = useCallback(() => setIsExpanded((isExpanded) => !isExpanded), []);
 
@@ -31,20 +32,22 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
                 return newComments
             })
             commentInputRef.current.value = ''
+            dispatch(infoActions.setInfo({ text: 'Comment added', type: 'success' }));
         } else {
-
+            dispatch(infoActions.setInfo({ text: 'Erorr adding comment: ' + response.result, type: 'error' }));
         }
     }, [])
 
     const deleteCommentClick = useCallback(async (id) => {
-        const result = await postsApi.deleteComment(id)
-        if (result.success) {
+        const response = await postsApi.deleteComment(id)
+        if (response.success) {
             setComments(prevComments => {
                 const newComments = prevComments.filter(comment => comment.id != id)
                 return newComments;
             })
+            dispatch(infoActions.setInfo({ text: 'Comment deleted', type: 'success' }));
         } else {
-
+            dispatch(infoActions.setInfo({ text: 'Erorr deleting comment: ' + response.result, type: 'error' }));
         }
     }, [])
 
@@ -54,7 +57,7 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
                 <p className="h4 m-0">{post.username}</p>
             </div>
             <div className="mx-2 color text-secondary">
-                <p className="h6">{date.toLocaleDateString(undefined, options) + " " + date.toLocaleTimeString(options)}</p>
+                <p className="h6">{getDate(date)}</p>
             </div>
             <div className="postBody m-2">
                 <span>{post.title}</span>
@@ -71,7 +74,7 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
                                 setDislikes(res.result.dislikes)
                             });
                     }}>
-                        <div className="postReactionIcon">
+                        <div>
                             <LikeIcon />
                         </div>
                         <div>
@@ -85,7 +88,7 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
                                 setDislikes(res.result.dislikes)
                             });
                     }}>
-                        <div className="postReactionIcon">
+                        <div>
                             <DislikeIcon />
                         </div>
                         <div>
@@ -111,9 +114,9 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
                 }
             </div>
             <div className="postComments" style={{ height: isExpanded ? comments.length > 3 ? "273px" : `${comments.length * 91}px` : "0px" }}>
-                {comments.map(comment => <PostComment comment={comment} deleteCommentClick={deleteCommentClick} />)}
+                {comments.map(comment => <PostComment comment={comment} deleteCommentClick={deleteCommentClick} key={comment.id} />)}
             </div>
-            <div className="postCommentInput justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center">
                 <div className="sendMessageInput mx-1">
                     <input ref={commentInputRef} type="text" />
                 </div>
@@ -124,6 +127,6 @@ const Post = memo(({ post, likeHandleClick, dislikeHandleClick, editPostHandleCl
         </div>
 
     </div>
-})
+}
 
 export default Post

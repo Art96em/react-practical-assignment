@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import Login from './components/pages/Login';
 import { useSelectorAuth } from './redux/store';
 import Main from './components/pages/Main';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import NotFound from './components/pages/NotFound';
 
 function App() {
 
@@ -18,8 +20,17 @@ function App() {
 
     return (
         <div className="App bg-secondary bg-opacity-25">
-            {!userData ? <Login /> : <Main />}
+            <BrowserRouter>
+                <Routes>
+                    <Route path='/'>
+                        {!userData && <Route index element={<Login />} />}
+                        {userData && <Route path='/posts' element={<Main />} />}
+                        <Route path="/*" element={<NotFound />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
         </div>
+
     );
 }
 

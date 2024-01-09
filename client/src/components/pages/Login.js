@@ -1,10 +1,12 @@
-import { memo, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { useDispatch } from 'react-redux'
 import { authActions } from "../../redux/AuthSlice";
+import { useNavigate } from "react-router";
 
 const Login = () => {
 
     const dispatch = useDispatch();
+    const navigate = useNavigate()
 
     const usernameRef = useRef('')
 
@@ -12,6 +14,7 @@ const Login = () => {
 
     const sumbitHandler = () => {
         dispatch(authActions.set(usernameRef.current.value))
+        navigate('/posts')
     }
 
     return <div className="login">
@@ -23,7 +26,7 @@ const Login = () => {
             </div>
             <div className="row">
                 <div className="col-12">
-                    <label for="username">Username</label>
+                    <label htmlFor="username">Username</label>
                     <input ref={usernameRef} type="text" autoComplete="off" className="form-control" id="username" aria-describedby="emailHelp" placeholder="Enter username" onChange={() => setSubmitDisable(!!usernameRef.current.value ? false : true)} />
                 </div>
             </div>

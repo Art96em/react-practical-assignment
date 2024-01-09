@@ -1,32 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import PostsApi from "../../api/postsApi";
 import { useSelectorAuth } from "../../redux/store";
-import PropTypes from 'prop-types'
 import { CheckIcon, DeleteIcon, EditIcon, MinusIcon, PlusIcon, XIcon } from "../icons/icons";
+import { infoActions } from "../../redux/InfoSlice";
+import { useDispatch } from "react-redux";
+import { getDate } from "../../util/util";
 
-function PostComment({ comment, deleteCommentClick }) {
+const PostComment = ({ comment, deleteCommentClick }) => {
 
     const username = useSelectorAuth();
     const postsApi = new PostsApi();
-
-    const options = { year: "numeric", month: "long", day: "numeric" }
+    const dispatch = useDispatch();
 
     const [likes, setLikes] = useState(comment.likes)
     const [dislikes, setDislikes] = useState(comment.dislikes)
-    const [date, setDate] = useState(new Date(+comment.date))
     const [commentText, setCommentText] = useState(comment.text)
     const [editMode, setEditMode] = useState(false)
-    const [author, setAuthor] = useState(comment.username)
 
+    const date = new Date(+comment.date)
+    const author = comment.username
     const rating = likes.length - dislikes.length
-
-    useEffect(() => {
-        setDislikes(comment.dislikes)
-        setLikes(comment.likes)
-        setDate(new Date(+comment.date))
-        setAuthor(comment.username)
-        setCommentText(comment.text)
-    }, [comment])
 
     const likeHandleClick = useCallback(async () => {
         const prevDislikes = comment.dislikes;
@@ -40,10 +33,10 @@ function PostComment({ comment, deleteCommentClick }) {
             prevLikes.push(username)
         }
         const commentUpdated = { ...comment, likes: prevLikes };
-        const result = await postsApi.editComment(commentUpdated);
-        setLikes(result.result.likes)
-        setDislikes(result.result.dislikes)
-        return result;
+        const response = await postsApi.editComment(commentUpdated);
+        setLikes(response.result.likes)
+        setDislikes(response.result.dislikes)
+        return response;
     }, [])
 
     const dislikeHandleClick = useCallback(async () => {
@@ -58,18 +51,18 @@ function PostComment({ comment, deleteCommentClick }) {
             prevDislikes.push(username)
         }
         const commentUpdated = { ...comment, dislikes: prevDislikes };
-        const result = await postsApi.editComment(commentUpdated);
-        setLikes(result.result.likes)
-        setDislikes(result.result.dislikes)
-        return result;
+        const response = await postsApi.editComment(commentUpdated);
+        setLikes(response.result.likes)
+        setDislikes(response.result.dislikes)
+        return response;
     }, [])
 
     const submitUpdateHandleClick = useCallback(async () => {
-        const result = await postsApi.editComment({ ...comment, text: commentText });
-        if (result.success) {
-
+        const response = await postsApi.editComment({ ...comment, text: commentText });
+        if (response.success) {
+            dispatch(infoActions.setInfo({ text: 'Comment edited', type: 'success' }));
         } else {
-
+            dispatch(infoActions.setInfo({ text: 'Erorr editing comment: ' + response.result, type: 'error' }));
         }
         setEditMode(prev => !prev)
     }, [])
@@ -105,18 +98,14 @@ function PostComment({ comment, deleteCommentClick }) {
                 </div>
             }
         </div>
-        {editMode ?
-            <div className="postCommentText fs-5 mb-1">
-                <input onChange={(e) => setCommentText(e.target.value)} value={commentText}></input>
-            </div>
-            :
-            <div className="postCommentText fs-5 mb-1">
-                {commentText}
-            </div>
-        }
-        <div className="postCommentFooter mb-2">
+
+        <div className="postCommentText fs-5 mb-1">
+            {editMode ? <input onChange={(e) => setCommentText(e.target.value)} value={commentText} /> : commentText}
+        </div>
+
+        <div className="postCommentFooter d-flex justify-content-between mb-2">
             <div className="postCommentTimestamp text-secondary">
-                {date.toLocaleDateString(undefined, options) + " " + date.toLocaleTimeString(options)}
+                {getDate(date)}
             </div>
             <div className="commentActions text-center align-bottom">
                 <div className={`commentAction commentLike h-100 ${likes.includes(username) ? 'clicked' : ''}`} onClick={likeHandleClick}>
@@ -133,29 +122,5 @@ function PostComment({ comment, deleteCommentClick }) {
 
     </div>
 }
-
-// PostComment.propTypes = {
-//     comment: PropTypes.arrayOf(PropTypes.shape({
-//         text: PropTypes.string,
-//         postId: PropTypes.number,
-//         username: PropTypes.string,
-//         likes: PropTypes.array,
-//         dislikes: PropTypes.array,
-//         date: PropTypes.number,
-//     })),
-//     deleteCommentClick: PropTypes.func
-// }
-
-// PostComment.defaultProps = {
-//     comment: {
-//         text: "test",
-//         postId: 777,
-//         username: "username",
-//         likes: [],
-//         dislikes: [],
-//         date: 1234567,
-//     },
-//     deleteCommentClick: () => {console.log('delete')}
-// }
 
 export default PostComment

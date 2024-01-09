@@ -1,30 +1,30 @@
 import { useState } from "react"
-import { useSelectorAuth } from "../../redux/store"
 import { XIcon } from "../icons/icons"
+import ReactDom from 'react-dom'
 
 const PostForm = ({ closeModalHandle, postConfirmHandle, post }) => {
 
     const [imageObj, setImageObj] = useState({ image: post.current?.imageSrc || '', displayImage: post.current?.imageSrc || '' })
     const [title, setTitle] = useState(post.current?.title || '')
 
-    const handleImageChange = (e) => {
+    const imageChangeHandle = (e) => {
         setImageObj({ image: e.target.files[0], displayImage: URL.createObjectURL(e.target.files[0]) })
     }
 
-    const handleTitleChange = (e) => {
+    const titleChangeHandle = (e) => {
         setTitle(e.target.value)
     }
 
-    const handleSubmitForm = async (e) => {
+    const submitFormHandle = async (e) => {
         e.preventDefault();
         await postConfirmHandle(title, imageObj.image);
     }
 
-    const deleteImage = () => {
+    const deleteImageHandle = () => {
         setImageObj({ image: '', displayImage: '' });
     }
 
-    return (
+    return ReactDom.createPortal(
         <div className="postForm" onClick={closeModalHandle}>
             <div className="postForm-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="postForm-header text-uppercase mb-5">
@@ -32,27 +32,28 @@ const PostForm = ({ closeModalHandle, postConfirmHandle, post }) => {
                 </div>
                 <div className="postForm-body">
                     <form>
-                        <div className="input-group mb-2">
+                        <div className="input-group mb-2 align-items-start">
                             <span className="input-group-text" id="inputGroup-sizing-default">Title</span>
-                            <input type="text" className="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" defaultValue={""} value={title} onChange={handleTitleChange} />
+                            <textarea className="form-control" onChange={titleChangeHandle} value={title}></textarea>
                         </div>
                         <div className="mb-2">
-                            <input className="form-control" type="file" id="formFile" onChange={handleImageChange} />
+                            <input className="form-control" type="file" id="formFile" onChange={imageChangeHandle} />
                         </div>
                         {imageObj.displayImage && <div className="postForm-imagePreview mb-2">
                             <img src={imageObj.displayImage} />
                         </div>}
                     </form>
                 </div>
-                <div className="postForm-footer">
-                    <button type="submit" className={`btn btn-primary ${!title ? 'disabled' : ''}`} onClick={handleSubmitForm}>Save</button>
-                    {!post.current && imageObj.displayImage && <button type="button" className="btn btn-primary" onClick={deleteImage}>Delete image</button>}
+                <div className="postForm-footer d-flex justify-content-between flex-row-reverse">
+                    <button type="submit" className={`btn btn-primary ${!title ? 'disabled' : ''}`} onClick={submitFormHandle}>Save</button>
+                    {!post.current && imageObj.displayImage && <button type="button" className="btn btn-primary" onClick={deleteImageHandle}>Delete image</button>}
                 </div>
                 <div className="postForm-close" onClick={closeModalHandle}>
                     <XIcon width={24} height={24} />
                 </div>
             </div>
-        </div>
+        </div>,
+        document.getElementById('portal')
     );
 }
 
