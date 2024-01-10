@@ -12,6 +12,7 @@ import { LogoutIcon, PlusIcon } from "../icons/icons";
 import InfoForm from "../forms/InfoForm";
 import { infoActions } from "../../redux/InfoSlice";
 import { useNavigate } from "react-router";
+import { pages } from "../../util/util";
 
 const Main = () => {
 
@@ -100,7 +101,7 @@ const Main = () => {
 
     const handleLogout = () => {
         dispatch(authActions.reset())
-        navigate('/')
+        navigate(pages.LOGIN)
     }
 
     const postConfirmHandle = useCallback(async (title, imageSrc) => {

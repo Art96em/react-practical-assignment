@@ -6,6 +6,8 @@ import { useSelectorAuth } from './redux/store';
 import Main from './components/pages/Main';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import NotFound from './components/pages/NotFound';
+import Navigator from './components/pages/Navigator';
+import { pages } from './util/util';
 
 function App() {
 
@@ -22,9 +24,9 @@ function App() {
         <div className="App bg-secondary bg-opacity-25">
             <BrowserRouter>
                 <Routes>
-                    <Route path='/'>
-                        {!userData && <Route index element={<Login />} />}
-                        {userData && <Route path='/posts' element={<Main />} />}
+                    <Route path='/' element={<Navigator />}>
+                        {!userData && <Route path={pages.LOGIN} element={<Login />} />}
+                        {userData && <Route path={pages.POSTS} element={<Main />} />}
                         <Route path="/*" element={<NotFound />} />
                     </Route>
                 </Routes>

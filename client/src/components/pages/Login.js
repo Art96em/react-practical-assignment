@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import { useDispatch } from 'react-redux'
 import { authActions } from "../../redux/AuthSlice";
 import { useNavigate } from "react-router";
+import { pages } from "../../util/util";
 
 const Login = () => {
 
@@ -14,7 +15,7 @@ const Login = () => {
 
     const sumbitHandler = () => {
         dispatch(authActions.set(usernameRef.current.value))
-        navigate('/posts')
+        navigate(pages.POSTS)
     }
 
     return <div className="login">
